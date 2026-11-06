@@ -1,17 +1,20 @@
 import type {ExtensionContext} from '@optimizely/cms-extensibility-sdk';
-import type {FieldResult, ProductOption} from '@shared/types';
+import type {EditorDiagnostics, FieldResult, ProductOption} from '@shared/types';
 import {useEffect, useLayoutEffect, useRef, useState, type CSSProperties} from 'react';
 
 import {call} from '../common/api';
 import {useStringProperty} from '../common/useProperty';
 
 // The CMS mounts this editor on EVERY long-string property and doesn't say which one,
-// so it asks the backend once per field: on the configured content types it is the
-// product picker, everywhere else a plain text field. Native controls and no component
+// so it asks the backend once per field whether this is the product field (see
+// fieldMode); everywhere else it is a plain text field. Native controls and no component
 // library keep the bundle small, since an item can have dozens of these iframes.
 
 // Typing saves after a pause, so the CMS isn't sent every keystroke; leaving the field saves at once.
 const SAVE_DELAY_MS = 400;
+// A Visual Builder element's fields can open before the CMS has saved the new element to the
+// draft, so an empty text-mode field asks once more after this long.
+const RECHECK_MS = 2_500;
 
 const CONTROL: CSSProperties = {
   font: 'inherit',
@@ -27,41 +30,85 @@ const CONTROL: CSSProperties = {
 };
 const NOTE: CSSProperties = {fontSize: 12, color: '#5f6368', margin: '6px 0 0'};
 const WARN: CSSProperties = {...NOTE, color: '#b3261e'};
+const LINK: CSSProperties = {...NOTE, display: 'block', padding: 0, border: 0, background: 'none', color: '#0037ff', cursor: 'pointer', textDecoration: 'underline'};
+
+// The iframe URL may carry a token; long values are logged by length only.
+function redact(query: string): string {
+  return query.replace(/=([^&]{40,})/g, (_match, v: string) => `=<${v.length} chars>`);
+}
+
+async function diagnostics(context: ExtensionContext): Promise<EditorDiagnostics> {
+  const [content, property, definition] = await Promise.all([
+    context.content.get().catch(() => null),
+    context.property.get().catch(() => null),
+    context.extension.getDefinition().catch(() => null),
+  ]);
+  return {
+    search: redact(window.location.search),
+    hash: redact(window.location.hash),
+    windowName: window.name,
+    contentKeys: Object.keys(content ?? {}),
+    propertyKeys: Object.keys(property ?? {}),
+    definition,
+  };
+}
 
 export function ProductPicker({context}: {context: ExtensionContext}) {
   const {value, readonly, settings, loaded, save, saveError} = useStringProperty(context);
   const [field, setField] = useState<FieldResult | null>(null);
+  const [asText, setAsText] = useState(false);
 
-  // Once the property has loaded (so its settings go along), ask which mode this field is in.
+  // Once the property has loaded (its value and settings go along), ask which mode this
+  // field is in. The latest value is read through a ref so typing doesn't re-ask.
+  const valueRef = useRef(value);
+  valueRef.current = value;
   useEffect(() => {
     if (!loaded) return;
     let active = true;
-    void (async () => {
+    let timer: number | null = null;
+    const ask = async (recheck: boolean) => {
       let next: FieldResult = {mode: 'text', contentType: null};
       try {
         const content = await context.content.get();
         if (content?.key) {
           next = await call(context, 'field', {
             content: {key: content.key, locale: content.locale, version: content.version},
+            value: valueRef.current,
             settings,
+            diagnostics: recheck ? undefined : await diagnostics(context),
           });
         }
       } catch {
         // Any failure leaves a working text field rather than a broken one.
       }
-      if (active) setField(next);
-    })();
+      if (!active) return;
+      setField(next);
+      if (!recheck && next.mode === 'text' && !valueRef.current) {
+        timer = window.setTimeout(() => void ask(true), RECHECK_MS);
+      }
+    };
+    void ask(false);
     return () => {
       active = false;
+      if (timer !== null) window.clearTimeout(timer);
     };
     // `settings` is left out on purpose: it arrives with the first load, and a later
     // change (the value being edited) doesn't change which mode the field is in.
   }, [context, loaded]);
 
+  const showPicker = field?.mode === 'picker' && !asText;
   return (
     <div style={{padding: 2}}>
-      {field?.mode === 'picker' ? (
-        <ProductSelect onPick={(id) => void save(id)} options={field.options} readonly={readonly} updatedAt={field.updatedAt} value={value} />
+      {showPicker ? (
+        <>
+          <ProductSelect onPick={(id) => void save(id)} options={field.options} readonly={readonly} updatedAt={field.updatedAt} value={value} />
+          {/* Only a best guess on a page: another empty long string there looks the same. */}
+          {field.reason === 'element' && !value && (
+            <button onClick={() => setAsText(true)} style={LINK} type="button">
+              Not the product field? Type text instead
+            </button>
+          )}
+        </>
       ) : (
         <TextField disabled={readonly || !loaded} onSave={(text) => void save(text)} value={value} />
       )}

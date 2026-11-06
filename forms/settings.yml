@@ -12,9 +12,9 @@ sections:
         key: contentTypes
         label: Content types with the picker
         help: >-
-          Comma-separated content type keys whose long-string field becomes the product
-          picker. Leave blank for ProductSpotlight. Everywhere else the field stays a plain
-          text field.
+          Comma-separated content type keys whose product field (their only long string)
+          becomes the product picker, as a shared block or an inline element. Leave blank for
+          ProductSpotlight. Everywhere else the field stays a plain text field.
       - type: button
         label: Save
         action: saveCatalog
@@ -26,7 +26,7 @@ sections:
         key: clientId
         label: Client ID
         help: >-
-          CMS → Settings → API Keys. Used to look up the open item's content type.
+          CMS → Settings → API Keys. Used to read the open item's content type and draft.
       - type: secret
         key: clientSecret
         label: Client secret

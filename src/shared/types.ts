@@ -24,15 +24,40 @@ export interface ProductOption {
 
 /**
  * How the editor renders this field. Property editors mount on every long-string
- * property, so the picker only appears on the configured content types; everywhere else
- * the field is a plain text field.
+ * property, so the picker only appears where the field is the product field; everywhere
+ * else it is a plain text field. `reason` says how the backend knew:
+ * - `value`: the field already holds a catalog product ID;
+ * - `type`: the open item is one of the configured content types (a shared block);
+ * - `element`: the open page has an inline element of that type with no product yet. Only
+ *   a best guess, since another empty long string on the page looks the same.
  */
 export type FieldResult =
   | {mode: 'text'; contentType: string | null}
-  | {mode: 'picker'; contentType: string; updatedAt: string; options: ProductOption[]};
+  | {
+      mode: 'picker';
+      reason: 'value' | 'type' | 'element';
+      contentType: string | null;
+      updatedAt: string;
+      options: ProductOption[];
+    };
+
+/** What the CMS hands the editor iframe, logged once to see whether it ever names the field. */
+export interface EditorDiagnostics {
+  search: string;
+  hash: string;
+  windowName: string;
+  contentKeys: string[];
+  propertyKeys: string[];
+  definition: unknown;
+}
 
 export type ActionParams = {
-  field: {content: ContentRef; settings?: Record<string, unknown> | null};
+  field: {
+    content: ContentRef;
+    value?: string;
+    settings?: Record<string, unknown> | null;
+    diagnostics?: EditorDiagnostics;
+  };
 };
 
 export type ActionResults = {

@@ -58,4 +58,14 @@ export class CmsClient {
       throw error;
     }
   }
+
+  /** One version with its properties and composition (the draft the editor has open). */
+  public async getVersion(key: string, version: string): Promise<unknown> {
+    try {
+      return await this.get<unknown>('Get version', `/v1/content/${key}/versions/${encodeURIComponent(version)}`);
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 404) return null;
+      throw error;
+    }
+  }
 }
