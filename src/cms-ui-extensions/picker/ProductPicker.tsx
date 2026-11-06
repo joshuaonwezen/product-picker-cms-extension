@@ -13,6 +13,15 @@ import {useStringProperty} from '../common/useProperty';
 // Typing saves after a pause, so the CMS isn't sent every keystroke; leaving the field saves at once.
 const SAVE_DELAY_MS = 400;
 
+// The iframe gets none of the CMS's styles, so without a font it renders in the browser's
+// default serif. Axiom's stack: the CMS loads Die Grotesk in its own page only, so inside
+// the iframe this lands on the system sans unless the font is installed locally.
+const ROOT: CSSProperties = {
+  padding: 2,
+  fontFamily: 'Die Grotesk B, DI Grotesk B, Roboto Variable, system-ui, -apple-system, "Segoe UI", sans-serif',
+  color: '#1f1f1f',
+  WebkitFontSmoothing: 'antialiased',
+};
 const CONTROL: CSSProperties = {
   font: 'inherit',
   fontSize: 14,
@@ -45,7 +54,7 @@ export function ProductPicker({context}: {context: ExtensionContext}) {
   }, [context]);
 
   return (
-    <div style={{padding: 2}}>
+    <div style={ROOT}>
       {state.status === 'ready' ? (
         <ProductSelect
           onPick={(id) => void save(id)}
