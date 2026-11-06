@@ -16,15 +16,13 @@ runtime: node22-cms-ext
 functions:
   cms_extension:
     entry_point: CmsUiExtension
-    description: Reads the open item's type and draft (CMS REST) and the site's product catalog.
+    description: Reads the site's product catalog for the picker.
     accepts: cms_ui_extension
 
 ui_extensions:
   property-editor:
-    # Long strings (string, no format) are the only kind the CMS mounted property editors
-    # on in our tests (a shortstring entry never appeared), and the editor lands on every
-    # one of them. It becomes the picker only on the product field (see field.ts);
-    # everywhere else it is a plain text field.
+    # Offered for long strings (string, no format). The CMS mounts it only where an admin
+    # picks it: content type -> property -> User Interface -> Editor: Product picker.
     - name: product-picker
       entry_point: ProductPicker
       display_name: Product picker

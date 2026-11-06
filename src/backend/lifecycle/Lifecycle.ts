@@ -11,9 +11,8 @@ import {
 } from '@zaiusinc/app-sdk';
 
 import {fetchCatalog, toOptions} from '../lib/catalog';
-import {CmsClient} from '../lib/cms';
 import {ApiError} from '../lib/http';
-import {catalogUrl, CatalogSettings, CmsSettings, normalizeSiteUrl, readSection} from '../lib/settings';
+import {catalogUrl, CatalogSettings, normalizeSiteUrl} from '../lib/settings';
 
 function text(formData: SubmittedFormData, key: string): string {
   const value = formData[key];
@@ -53,7 +52,6 @@ export class Lifecycle extends AppLifecycle {
     const result = new LifecycleSettingsResult();
     try {
       if (section === 'catalog' && action === 'saveCatalog') return await this.saveCatalog(formData, result);
-      if (section === 'cms' && action === 'saveCms') return await this.saveCms(formData, result);
     } catch (error) {
       logger.error('Settings save failed', error);
       return result.addToast('danger', 'Could not save settings. Try again.');
@@ -66,7 +64,7 @@ export class Lifecycle extends AppLifecycle {
   private async saveCatalog(formData: SubmittedFormData, result: LifecycleSettingsResult) {
     const siteUrl = normalizeSiteUrl(text(formData, 'siteUrl'));
     if (!siteUrl) return result.addError('siteUrl', 'A full URL, e.g. https://optimizely-onboarding.vercel.app.');
-    const next: CatalogSettings = {siteUrl, contentTypes: text(formData, 'contentTypes')};
+    const next: CatalogSettings = {siteUrl};
 
     try {
       const products = toOptions(await fetchCatalog(catalogUrl(siteUrl), 0));
@@ -84,31 +82,6 @@ export class Lifecycle extends AppLifecycle {
 
     await storage.settings.put('catalog', {...next});
     return result.addToast('success', 'Product catalog saved.');
-  }
-
-  private async saveCms(formData: SubmittedFormData, result: LifecycleSettingsResult) {
-    const previous = await readSection<CmsSettings>('cms');
-    const next: CmsSettings = {
-      clientId: text(formData, 'clientId'),
-      // A secret field comes back blank when the editor didn't retype it - keep the stored one.
-      clientSecret: text(formData, 'clientSecret') || previous.clientSecret || '',
-    };
-    if (!next.clientId) return result.addError('clientId', 'Required.');
-    if (!next.clientSecret) return result.addError('clientSecret', 'Required.');
-
-    try {
-      await new CmsClient({clientId: next.clientId, clientSecret: next.clientSecret}).token();
-    } catch (error) {
-      if (error instanceof ApiError && error.status < 500) {
-        return result
-          .addError('clientSecret', 'The CMS rejected this client ID / secret.')
-          .addToast('danger', 'The CMS rejected the API client credentials.');
-      }
-      throw error;
-    }
-
-    await storage.settings.put('cms', {...next});
-    return result.addToast('success', 'CMS API client saved.');
   }
 
   public async onAuthorizationRequest(

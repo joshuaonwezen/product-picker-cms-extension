@@ -1,6 +1,6 @@
-export type Service = 'cms' | 'catalog';
+export type Service = 'catalog';
 
-/** A non-2xx answer from the CMS or the catalog API, carried back to the UI as `{error: code}`. */
+/** A non-2xx answer from the catalog API, carried back to the UI as `{error: code}`. */
 export class ApiError extends Error {
   public readonly status: number;
   public readonly code: string;

@@ -13,8 +13,9 @@ export class CallError extends Error {
 }
 
 const FALLBACK_MESSAGES: Record<string, string> = {
+  not_configured: 'The Product picker has no catalog yet: save the site URL in its app settings.',
   catalog_unavailable: 'The product catalog did not answer. Try again in a moment.',
-  cms_unauthorized: 'The CMS rejected the API client. Check it in the app settings.',
+  catalog_not_found: 'The site has no product catalog at /api/catalog/products.',
   internal_error: 'Something went wrong in the extension backend.',
   backend_unreachable: 'The extension backend failed before answering. The app logs (ocp app logs) have the details.',
 };

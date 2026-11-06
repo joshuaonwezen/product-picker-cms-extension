@@ -1,14 +1,12 @@
 # Product picker
 
 ## Setup
-1. **Product catalog**: the site URL whose `/api/catalog/products` lists the products, and
-   optionally the content types that get the picker (default `ProductSpotlight`).
-2. **CMS API client**: a client ID and secret (CMS → Settings → API Keys), used to read the open
-   item's content type and draft.
+1. **Product catalog**: save the site URL whose `/api/catalog/products` lists the products.
+2. **Bind it to a property**: Settings → Content Types → the type (e.g. Product Spotlight) → the
+   product property (a long string) → User Interface → **Editor: Product picker**. Do this on each
+   CMS instance.
 
 ## How it works
-The CMS mounts property editors on every long-string property, without saying which one. The
-catalog dropdown appears on a field that already holds a product, on a configured content type's
-field (a shared block), and on an empty field of a page whose draft has a Product Spotlight element
-with no product yet. In that last case a "Type text instead" link turns a field that isn't the
-product field back into text. Everywhere else the field is a plain text field.
+A bound property shows a dropdown of the catalog's products, grouped by category with each
+product's rate, and stores the product ID. If the catalog can't be read, the property falls back to
+a plain text field and says why.
