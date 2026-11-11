@@ -10,8 +10,8 @@ describe('settings', () => {
   });
 
   it('normalizes the site URL', () => {
-    expect(normalizeSiteUrl(' https://optimizely-onboarding.vercel.app/ ')).toBe('https://optimizely-onboarding.vercel.app');
-    expect(normalizeSiteUrl('optimizely-onboarding.vercel.app')).toBeNull();
+    expect(normalizeSiteUrl(' https://www.example.com/ ')).toBe('https://www.example.com');
+    expect(normalizeSiteUrl('www.example.com')).toBeNull();
   });
 
   it('has no catalog until the site URL is saved', async () => {
@@ -22,7 +22,7 @@ describe('settings', () => {
   });
 
   it('builds the catalog URL from the saved site URL', async () => {
-    await storage.settings.put('catalog', {siteUrl: 'https://optimizely-onboarding.vercel.app'});
-    expect(await loadCatalogUrl()).toBe('https://optimizely-onboarding.vercel.app/api/catalog/products');
+    await storage.settings.put('catalog', {siteUrl: 'https://www.example.com'});
+    expect(await loadCatalogUrl()).toBe('https://www.example.com/api/catalog/products');
   });
 });

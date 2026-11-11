@@ -2,7 +2,7 @@ import {describe, expect, it} from 'vitest';
 
 import {toOptions} from './catalog';
 
-// Shape of optimizely-nextjs-demo GET /api/catalog/products (2026-11-06).
+// Shape of a site's GET /api/catalog/products (2026-11-06).
 const CATALOG = {
   updatedAt: '2026-11-06',
   products: [

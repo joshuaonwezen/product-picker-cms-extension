@@ -1,7 +1,7 @@
 import type {ProductOption} from '../../shared/types';
 import {requestJson} from './http';
 
-// The site's product catalog API (optimizely-nextjs-demo /api/catalog/products). Only the
+// The site's product catalog API (GET /api/catalog/products, see README). Only the
 // fields the picker shows are read; the site renders everything else from its own copy.
 
 interface CatalogRate {
