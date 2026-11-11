@@ -6,8 +6,8 @@ sections:
         key: siteUrl
         label: Site URL
         help: >-
-          The site whose /api/catalog/products lists the products, e.g.
-          https://optimizely-onboarding.vercel.app.
+          Your site's address, e.g. https://www.example.com. The catalog is read from
+          /api/catalog/products on that site, and saving checks that it lists products.
       - type: button
         label: Save
         action: saveCatalog

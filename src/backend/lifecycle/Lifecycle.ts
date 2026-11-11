@@ -63,7 +63,7 @@ export class Lifecycle extends AppLifecycle {
   // Proves the URL by reading the catalog the picker will list.
   private async saveCatalog(formData: SubmittedFormData, result: LifecycleSettingsResult) {
     const siteUrl = normalizeSiteUrl(text(formData, 'siteUrl'));
-    if (!siteUrl) return result.addError('siteUrl', 'A full URL, e.g. https://optimizely-onboarding.vercel.app.');
+    if (!siteUrl) return result.addError('siteUrl', 'A full URL, e.g. https://www.example.com.');
     const next: CatalogSettings = {siteUrl};
 
     try {

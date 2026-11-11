@@ -17,7 +17,7 @@ const FALLBACK_MESSAGES: Record<string, string> = {
   catalog_unavailable: 'The product catalog did not answer. Try again in a moment.',
   catalog_not_found: 'The site has no product catalog at /api/catalog/products.',
   internal_error: 'Something went wrong in the extension backend.',
-  backend_unreachable: 'The extension backend failed before answering. The app logs (ocp app logs) have the details.',
+  backend_unreachable: "The extension didn't answer. Try again in a moment; if it keeps happening, ask a CMS admin to check the app.",
 };
 
 /** Calls one backend action; resolves with its result or throws CallError. */
